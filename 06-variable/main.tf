@@ -2,12 +2,60 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
-# vpc module
+# terraform.tfvars에 정의된 variable 정보를 가져와서 초기화를 진행한다
+variable "vpc_name" {
+  description = "생성되는 vpc 이름"
+  type        = string
+  default     = "default_vpc"
+}
+
+locals {
+  common_tags = {
+    project = "terraform-study"
+    owner   = "brian"
+  }
+}
+
+########################################
+#                                      #
+#             output 정의              #
+#                                      #
+########################################
+
+output "vpc_name" {
+  description = "vpc의 이름"
+  value       = module.vpc.name
+}
+
+output "vpc_id" {
+  description = "vpc의 id 정보"
+  value       = module.vpc.id
+}
+
+output "vpc_cidr" {
+  description = "vpc에 할당되는 cidr block 정보"
+  value       = module.vpc.cidr_block
+}
+
+output "subnet_groups" {
+  description = "subnet 그룹의 정보. public, private를 모두 포함한다"
+  value = {
+    public  = module.subnet_group__public
+    private = module.subnet_group__private
+  }
+}
+
+########################################
+#                                      #
+#             module 정의              #
+#                                      #
+########################################
+
 module "vpc" {
   source  = "tedilabs/network/aws//modules/vpc"
   version = "0.24.0"
 
-  name       = "terraform-example"
+  name       = var.vpc_name
   cidr_block = "20.0.0.0/16"
 
   internet_gateway_enabled = true
@@ -15,7 +63,7 @@ module "vpc" {
   dns_hostnames_enabled = true
   dns_support_enabled   = true
 
-  tags = {}
+  tags = local.common_tags
 }
 
 # public subnet group
@@ -39,7 +87,7 @@ module "subnet_group__public" {
     }
   }
 
-  tags = {}
+  tags = local.common_tags
 }
 
 module "subnet_group__private" {
@@ -62,7 +110,7 @@ module "subnet_group__private" {
     }
   }
 
-  tags = {}
+  tags = local.common_tags
 }
 
 module "route_table__public" {
@@ -81,7 +129,7 @@ module "route_table__public" {
     }
   ]
 
-  tags = {}
+  tags = local.common_tags
 }
 
 module "route_table__private" {
@@ -95,5 +143,5 @@ module "route_table__private" {
 
   ipv4_routes = []
 
-  tags = {}
+  tags = local.common_tags
 }
