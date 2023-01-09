@@ -1,3 +1,14 @@
+// Remote Backend를 S3로 관리
+terraform {
+  cloud {
+    organization = "terraform-example-brian"
+
+    workspaces {
+      name = "practice-tf-backend"
+    }
+  }
+}
+
 provider "aws" {
   region = "ap-northeast-2"
 }
